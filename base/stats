@@ -1,0 +1,10 @@
+#!/bin/sh
+# Show buildah images and containers (host buildah, not inside container).
+set -e
+
+echo "=== Images ==="
+buildah images
+
+echo ""
+echo "=== Containers ==="
+buildah containers

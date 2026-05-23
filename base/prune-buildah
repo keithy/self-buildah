@@ -1,0 +1,17 @@
+#!/bin/sh
+# Uninstall buildah from a running container, commit as clean build image.
+# Run after self-layering is done, before running base/up again.
+set -e
+
+IMAGE="localhost/self-buildah"
+CTR_NAME="${CTR_NAME:-self-buildah-dev}"
+
+echo "→ Uninstalling buildah, fuse-overlayfs..."
+buildah run "$CTR_NAME" -- apk del buildah fuse-overlayfs
+
+echo "→ Committing clean :build image..."
+buildah commit "$CTR_NAME" "${IMAGE}:build"
+
+echo ""
+echo "=== Images ==="
+buildah images "$IMAGE"

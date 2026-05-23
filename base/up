@@ -1,0 +1,27 @@
+#!/bin/sh
+# Launch the self-building container.
+
+IMAGE="${IMAGE:-localhost/self-buildah:latest}"
+BIN_DIR="${BIN_DIR:-./bin}"
+SBIN_DIR="${SBIN_DIR:-./sbin}"
+
+CTR_NAME="${CTR_NAME:-self-buildah-dev}"
+
+BUILDAH_STORAGE="${BUILDAH_STORAGE:-/opt/storage}"
+BUILDAH_RUN="${BUILDAH_RUN:-/run/user/1003/containers}"
+
+podman rm "$CTR_NAME" 2>/dev/null || true
+
+podman run -ti \
+  --name "$CTR_NAME" \
+  --device /dev/fuse \
+  --security-opt apparmor=unconfined \
+  --security-opt seccomp=unconfined \
+  --userns=keep-id \
+  --user=0:0 \
+  -e BUILDAH_ISOLATION=chroot \
+  -v "${BIN_DIR}:/usr/local/bin:ro" \
+  -v "${SBIN_DIR}:/usr/local/sbin:ro" \
+  -v "${BUILDAH_STORAGE}:/var/lib/containers" \
+  -v "${BUILDAH_RUN}:/run/containers" \
+  "$IMAGE" "$@"

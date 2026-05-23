@@ -1,0 +1,38 @@
+#!/bin/sh
+# Rebuild :latest from running container, excluding buildah.
+# Creates a clean lean image without buildah.
+set -e
+
+CTR_NAME="${CTR_NAME:-self-buildah-dev}"
+IMAGE="localhost/self-buildah"
+
+echo "→ Creating fresh alpine container..."
+buildah rm trimmed 2>/dev/null || true
+buildah from --name trimmed alpine:3.23
+
+echo "→ Copying filesystem from $CTR_NAME..."
+buildah copy trimmed "${CTR_NAME}:/" /
+
+echo "→ Removing buildah and fuse..."
+buildah run trimmed -- sh -c '
+  rm -rf \
+    /usr/bin/buildah \
+    /usr/bin/bud \
+    /usr/bin/budit \
+    /usr/bin/buildah-split \
+    /usr/bin/fuse-overlayfs \
+    /usr/libexec/buildah \
+    /usr/share/bash-completion/completions/buildah \
+    /etc/bash_completion.d/buildah \
+    /usr/share/fuse-overlayfs \
+    /var/cache/apk/*buildah* \
+    /var/cache/apk/*fuse*
+'
+
+echo "→ Committing :latest..."
+buildah commit trimmed "${IMAGE}:latest"
+
+echo "→ Cleaning up..."
+buildah rm trimmed 2>/dev/null || true
+
+echo "✅ :latest rebuilt clean (lean, no buildah)"

@@ -1,0 +1,12 @@
+#!/bin/sh
+# Reset: remove dev container and images.
+set -e
+
+echo "→ Removing dev container..."
+buildah rm self-buildah-dev 2>/dev/null || true
+podman rm -f self-buildah-dev 2>/dev/null || true
+
+echo "→ Removing images..."
+buildah rmi localhost/self-buildah:latest localhost/self-buildah:build 2>/dev/null || true
+
+echo "✅ Reset complete. Run ./base/init to start fresh."

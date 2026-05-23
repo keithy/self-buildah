@@ -1,0 +1,28 @@
+#!/bin/sh
+# Build the base image from alpine:3.23.
+# Creates :latest (clean base). :build is created separately inside the container.
+set -e
+
+IMAGE="localhost/self-buildah"
+CTR_NAME="self-buildah-init"
+
+echo "→ Creating container from alpine:3.23..."
+buildah rm "$CTR_NAME" 2>/dev/null || true
+buildah from --name "$CTR_NAME" alpine:3.23
+
+echo "→ Committing :latest..."
+buildah commit "$CTR_NAME" "${IMAGE}:latest"
+
+echo "→ Cleaning up container..."
+buildah rm "$CTR_NAME" 2>/dev/null || true
+
+echo ""
+echo "=== Images ==="
+buildah images "$IMAGE"
+
+echo ""
+echo "→ :latest is ready. To create :build (with buildah), run:"
+echo "   ./base/up"
+echo "   # then inside: buildah from localhost/self-buildah:latest --name dev"
+echo "   # then inside: buildah run dev -- apk add --no-cache buildah fuse-overlayfs"
+echo "   # then inside: buildah commit dev localhost/self-buildah:build"
