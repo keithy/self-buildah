@@ -1,4 +1,4 @@
 #!/bin/execlineb -S0
 if { test "$(id -u)" = "0" }
-  { exec su-exec nobody /app/bin/goclaw ${@} }
-exec /app/bin/goclaw ${@}
+  exec su-exec nobody $BINARY ${@}
+exec $BINARY ${@}
